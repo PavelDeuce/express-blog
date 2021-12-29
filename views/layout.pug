@@ -2,11 +2,11 @@ doctype html
 html(lang='eng')
   head
     title= title
-    link(rel='stylesheet' href='../css/bootstrap.min.css')
+    link(rel='stylesheet' href='../../css/bootstrap.min.css')
   body
     nav.navbar.bg-light.p-3
-      div.container
-        a.navbar-brand(href="/") Blog
+      .container
+        a.navbar-brand(href='/') Blog
         if currentUser.isGuest()
           ul.nav
             li.nav-item
@@ -14,12 +14,11 @@ html(lang='eng')
             li.nav-item
               a.nav-link(href="/users/new") Sign up
         else
-          div.d-flex
+          .d-flex
             ul.nav
-              li.nav-item
-                a.nav-link(href="/my/posts/new") Write Post
               li.nav-item
                 a.nav-link(href="/my/posts") My Posts
             form(action='/session?_method=DELETE' method='post')
               button.btn.btn-secondary(type='submit') Sign out
-    block content
+    .container.mt-3
+      block content

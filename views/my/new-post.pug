@@ -1,0 +1,6 @@
+extends ../layout.pug
+
+block content
+  form(action='/my/posts' method='post')
+    h3 New post
+    include ../components/post-form.pug

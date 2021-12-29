@@ -1,0 +1,6 @@
+extends ../layout.pug
+
+block content
+  form(action=`/my/posts/${post.id}?_method=PATCH` method='post')
+    h3 Edit post '#{post.title}'
+    include ../components/post-form.pug

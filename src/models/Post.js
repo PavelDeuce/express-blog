@@ -7,5 +7,6 @@ export default class Post {
     this.title = title;
     this.body = body;
     this.user = user;
+    this.createdDate = new Date();
   }
 }

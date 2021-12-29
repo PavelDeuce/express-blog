@@ -1,17 +1,19 @@
 extends ../layout
 
 block content
-  div.container
+  if !currentUser.isGuest()
+    a.btn.btn-primary.mt-3(href='/my/new-post') Write New Post
+  .overflow-scroll.vh-100
     if posts.length > 0
-      table.table.w-100.p-5
-        thead
-          tr
-            th Title
-            th Actions
-        tbody
-          for post in posts
-            tr
-              td= post.title
-              td empty
+      for post in posts
+        .card.shadow-sm.mb-3.mt-3
+          .card-header.d-flex.justify-content-between.align-items-center
+            a(href=`/posts/${post.id}`)
+              h3.card-title= post.title
+            span= post.createdDate.toLocaleDateString()
+          .card-body
+            p= post.body
+          .d-flex.justify-content-end.p-2
+            span= post.user
     else if posts.length === 0
-      p empty
+      h3 Oops, it seems empty here. Write your first post

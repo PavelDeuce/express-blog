@@ -1,0 +1,14 @@
+.form-group
+  label.form-label
+    | Title
+  input.form-control(name='title' value=form.title)
+  if errors.title
+    p.text-warning= errors.title
+.form-group
+  label.form-label
+    | Body
+  textarea.form-control(rows=10 name='body')= form.body
+  if errors.body
+    p.text-warning= errors.body
+.form-group
+  button.btn.btn-primary.btn-block.w-25.mt-2(type='submit') Save

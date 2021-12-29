@@ -2,14 +2,14 @@ extends ../layout
 
 block content
   form(action='/session' method='post').col-8.m-auto.mt-5
-    div.d-flex.flex-column.align-content-center.justify-content-center.w-50.m-auto
+    .d-flex.flex-column.align-content-center.justify-content-center.w-50.m-auto
       h3.text-center Login form
       if error
         p.text-warning= error
-      div.form-group
+      .form-group
         label.form-label Nickname
         input(name='nickname', type='tetx', placeholder='Enter the nickname' value=form.nickname).form-control
-      div.form-group
+      .form-group
         label.form-label Password
         input(name='password', type='password' placeholder='Enter the password').form-control
       button(type='submit').btn-primary.mt-4 Login
