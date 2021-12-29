@@ -29,7 +29,8 @@
     "express-session": "^1.17.2",
     "lodash": "^4.17.21",
     "method-override": "^3.0.0",
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
     "@jest/globals": "^26.6.2",
