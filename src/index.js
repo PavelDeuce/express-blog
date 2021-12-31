@@ -3,6 +3,7 @@ import session from 'express-session';
 import favicon from 'serve-favicon';
 import bodyParser from 'body-parser';
 import methodOverride from 'method-override';
+import flash from 'flash';
 import routes from './routes.js';
 
 const app = new Express();
@@ -18,6 +19,7 @@ app.use(
     saveUninitialized: false,
   }),
 );
+app.use(flash());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 routes(app);

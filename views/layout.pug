@@ -20,5 +20,10 @@ html(lang='eng')
                 a.nav-link(href="/my/posts") My Posts
             form(action='/session?_method=DELETE' method='post')
               button.btn.btn-secondary(type='submit') Sign out
+    .container
+      .mt-3
+        while message = flash.shift()
+          div(class='alert alert-' + message.type)
+            = message.message
     .container.mt-3
       block content

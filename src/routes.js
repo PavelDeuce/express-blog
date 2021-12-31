@@ -72,6 +72,7 @@ export default (app) => {
     const user = new User(trimmedNickname, encrypt(trimmedPassword));
     state.users.push(user);
     res.status(200);
+    res.flash('success', 'Successful registration!');
     res.redirect('/');
   });
 
@@ -88,6 +89,7 @@ export default (app) => {
     if (user && user.password === encrypt(password)) {
       req.session.nickname = user.nickname;
       res.status(200);
+      res.flash('info', `Welcome, ${user.nickname}!`);
       res.redirect('/');
       return;
     }
@@ -96,6 +98,7 @@ export default (app) => {
   });
 
   app.delete('/session', (req, res) => {
+    res.flash('info', `Goodbye, ${res.locals.currentUser.nickname}`);
     delete req.session.nickname;
     res.redirect('/');
   });
@@ -130,6 +133,7 @@ export default (app) => {
       const post = new Post(trimmedTitle, trimmedBody, res.locals.currentUser.nickname);
       state.posts.push(post);
       res.status(200);
+      res.flash('success', 'New post is published!');
       res.redirect(`/my/posts/${post.id}`);
       return;
     }
@@ -154,6 +158,7 @@ export default (app) => {
       if (_.keys(errors).length === 0) {
         post.title = trimmedTitle;
         post.body = trimmedBody;
+        res.flash('success', 'The post is changed!');
         res.redirect(`/my/posts/${post.id}`);
         return;
       }
