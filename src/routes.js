@@ -85,29 +85,30 @@ export default (app) => {
     });
   });
 
-  app.post(endPoints.session(), (req, res) => {
-    const { nickname, password } = req.body;
-    const user = state.users.find((u) => u.nickname === nickname);
-    if (user && user.password === encrypt(password)) {
-      req.session.nickname = user.nickname;
-      res.status(200);
-      res.flash('info', `Welcome, ${user.nickname}!`);
+  app
+    .route(endPoints.session())
+    .post((req, res) => {
+      const { nickname, password } = req.body;
+      const user = state.users.find((u) => u.nickname === nickname);
+      if (user && user.password === encrypt(password)) {
+        req.session.nickname = user.nickname;
+        res.status(200);
+        res.flash('info', `Welcome, ${user.nickname}!`);
+        res.redirect(endPoints.main());
+        return;
+      }
+      res.status(422);
+      res.render('session/new', {
+        title: 'Login',
+        form: req.body,
+        errors: { authentication: validationErrors.authentication() },
+      });
+    })
+    .delete((req, res) => {
+      res.flash('info', `Goodbye, ${res.locals.currentUser.nickname}`);
+      delete req.session.nickname;
       res.redirect(endPoints.main());
-      return;
-    }
-    res.status(422);
-    res.render('session/new', {
-      title: 'Login',
-      form: req.body,
-      errors: { authentication: validationErrors.authentication() },
     });
-  });
-
-  app.delete(endPoints.session(), (req, res) => {
-    res.flash('info', `Goodbye, ${res.locals.currentUser.nickname}`);
-    delete req.session.nickname;
-    res.redirect(endPoints.main());
-  });
 
   app.get(endPoints.myPosts(), requiredAuth, (req, res) => {
     const { posts } = state;
@@ -115,44 +116,19 @@ export default (app) => {
     res.render('my/posts', { title: 'My posts', posts: userPosts });
   });
 
-  app.get(endPoints.myPost(), requiredAuth, (req, res, next) => {
-    const post = state.posts.find(
-      (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
-    );
-    if (post) {
-      res.render('my/edit-post', { title: `Post: ${post.title}`, post, form: post, errors: {} });
-    } else {
-      next(new NotFoundError());
-    }
-  });
-
-  app.post(endPoints.myPosts(), requiredAuth, (req, res) => {
-    const { title, body } = req.body;
-    const trimmedTitle = title.trim();
-    const trimmedBody = body.trim();
-    const errors = {};
-
-    if (!trimmedTitle) errors.title = validationErrors.blank();
-    if (!trimmedBody) errors.body = validationErrors.blank();
-
-    if (_.keys(errors).length === 0) {
-      const post = new Post(trimmedTitle, trimmedBody, res.locals.currentUser.nickname);
-      state.posts.push(post);
-      res.status(200);
-      res.flash('success', 'New post is published!');
-      res.redirect(`/my/posts/${post.id}`);
-      return;
-    }
-
-    res.status(400);
-    res.render('my/new-post', { title: 'New post', form: req.body, errors });
-  });
-
-  app.patch(endPoints.myPost(), requiredAuth, (req, res, next) => {
-    const post = state.posts.find(
-      (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
-    );
-    if (post) {
+  app
+    .route(endPoints.myPost())
+    .get(requiredAuth, (req, res, next) => {
+      const post = state.posts.find(
+        (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
+      );
+      if (post) {
+        res.render('my/edit-post', { title: `Post: ${post.title}`, post, form: post, errors: {} });
+      } else {
+        next(new NotFoundError());
+      }
+    })
+    .post(requiredAuth, (req, res) => {
       const { title, body } = req.body;
       const trimmedTitle = title.trim();
       const trimmedBody = body.trim();
@@ -162,27 +138,51 @@ export default (app) => {
       if (!trimmedBody) errors.body = validationErrors.blank();
 
       if (_.keys(errors).length === 0) {
-        post.title = trimmedTitle;
-        post.body = trimmedBody;
-        res.flash('success', 'The post is changed!');
+        const post = new Post(trimmedTitle, trimmedBody, res.locals.currentUser.nickname);
+        state.posts.push(post);
+        res.status(200);
+        res.flash('success', 'New post is published!');
         res.redirect(`/my/posts/${post.id}`);
         return;
       }
 
-      res.status(422);
-      res.render('my/posts/edit', { post, form: req.body, errors });
-    } else {
-      next(new NotFoundError());
-    }
-  });
+      res.status(400);
+      res.render('my/new-post', { title: 'New post', form: req.body, errors });
+    })
+    .patch(requiredAuth, (req, res, next) => {
+      const post = state.posts.find(
+        (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
+      );
+      if (post) {
+        const { title, body } = req.body;
+        const trimmedTitle = title.trim();
+        const trimmedBody = body.trim();
+        const errors = {};
 
-  app.delete(endPoints.myPost(), requiredAuth, (req, res) => {
-    state.posts = state.posts.filter(
-      (p) => !(p.id === Number(req.params.id) && res.locals.currentUser.nickname === p.user),
-    );
-    res.status(200);
-    res.redirect('/my/posts');
-  });
+        if (!trimmedTitle) errors.title = validationErrors.blank();
+        if (!trimmedBody) errors.body = validationErrors.blank();
+
+        if (_.keys(errors).length === 0) {
+          post.title = trimmedTitle;
+          post.body = trimmedBody;
+          res.flash('success', 'The post is changed!');
+          res.redirect(`/my/posts/${post.id}`);
+          return;
+        }
+
+        res.status(422);
+        res.render('my/posts/edit', { post, form: req.body, errors });
+      } else {
+        next(new NotFoundError());
+      }
+    })
+    .delete(requiredAuth, (req, res) => {
+      state.posts = state.posts.filter(
+        (p) => !(p.id === Number(req.params.id) && res.locals.currentUser.nickname === p.user),
+      );
+      res.status(200);
+      res.redirect('/my/posts');
+    });
 
   app.get(endPoints.myNewPost(), requiredAuth, (req, res) => {
     res.render('my/new-post', { title: 'New post', form: {}, errors: {} });
