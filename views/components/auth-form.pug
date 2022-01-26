@@ -1,5 +1,5 @@
-if error
-  p.text-warning= error
+if errors.authentication
+  p.text-warning= errors.authentication
 .form-group
   label.form-label Nickname
   input(name='nickname', type='text', placeholder='Enter the nickname' value=form.nickname).form-control

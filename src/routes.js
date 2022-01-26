@@ -5,7 +5,7 @@ import User from './models/User.js';
 import Post from './models/Post.js';
 import state from './state.js';
 import encrypt from './encrypt.js';
-import validationErrors from './constants/index.js';
+import { endPoints, validationErrors } from './constants/index.js';
 import requiredAuth from './required-auth.js';
 
 export default (app) => {
@@ -18,7 +18,7 @@ export default (app) => {
     next();
   });
 
-  app.get('/', (req, res) => {
+  app.get(endPoints.main(), (req, res) => {
     const { posts } = state;
 
     res.render('posts/posts', {
@@ -27,28 +27,29 @@ export default (app) => {
     });
   });
 
-  app.get('/posts', (req, res) => {
+  app.get(endPoints.posts(), (req, res) => {
     const { posts } = state;
-    res.render('posts', { posts });
+    res.render('posts/posts', { title: 'All Posts', posts });
   });
 
-  app.get('/posts/:id', (req, res, next) => {
+  app.get(endPoints.post(), (req, res, next) => {
     const post = state.posts.find((p) => p.id === Number(req.params.id));
     if (post) {
-      res.render('posts/show-post', { post });
+      res.render('posts/show-post', { title: `Post: ${post.title}`, post });
     } else {
       next(new NotFoundError());
     }
   });
 
-  app.get('/users/new', (req, res) => {
+  app.get(endPoints.newUser(), (req, res) => {
     res.render('users/new', {
+      title: 'Signup',
       form: {},
       errors: {},
     });
   });
 
-  app.post('/users', (req, res) => {
+  app.post(endPoints.users(), (req, res) => {
     const { nickname, password } = req.body;
     const trimmedNickname = nickname.trim();
     const trimmedPassword = password.trim();
@@ -61,11 +62,11 @@ export default (app) => {
       errors.nickname = validationErrors.unique();
     if (!trimmedPassword) errors.password = validationErrors.blank();
     if (trimmedPassword && trimmedPassword.length < passwordLength)
-      errors.password = validationErrors.symbolslength(passwordLength);
+      errors.password = validationErrors.symbolsLength(passwordLength);
 
     if (_.keys(errors).length > 0) {
       res.status(422);
-      res.render('users/new', { form: req.body, errors });
+      res.render('users/new', { title: 'Signup', form: req.body, errors });
       return;
     }
 
@@ -73,54 +74,59 @@ export default (app) => {
     state.users.push(user);
     res.status(200);
     res.flash('success', 'Successful registration!');
-    res.redirect('/');
+    res.redirect(endPoints.main());
   });
 
-  app.get('/session/new', (req, res) => {
+  app.get(endPoints.newSession(), (req, res) => {
     res.render('session/new', {
+      title: 'Login',
       form: {},
       errors: {},
     });
   });
 
-  app.post('/session', (req, res) => {
+  app.post(endPoints.session(), (req, res) => {
     const { nickname, password } = req.body;
     const user = state.users.find((u) => u.nickname === nickname);
     if (user && user.password === encrypt(password)) {
       req.session.nickname = user.nickname;
       res.status(200);
       res.flash('info', `Welcome, ${user.nickname}!`);
-      res.redirect('/');
+      res.redirect(endPoints.main());
       return;
     }
     res.status(422);
-    res.render('session/new', { form: req.body, error: 'Invalid nickname or password' });
+    res.render('session/new', {
+      title: 'Login',
+      form: req.body,
+      errors: { authentication: validationErrors.authentication() },
+    });
   });
 
-  app.delete('/session', (req, res) => {
+  app.delete(endPoints.session(), (req, res) => {
     res.flash('info', `Goodbye, ${res.locals.currentUser.nickname}`);
     delete req.session.nickname;
-    res.redirect('/');
+    res.redirect(endPoints.main());
   });
 
-  app.get('/my/posts', requiredAuth, (req, res) => {
+  app.get(endPoints.myPosts(), requiredAuth, (req, res) => {
     const { posts } = state;
     const userPosts = posts.filter((p) => p.user === res.locals.currentUser.nickname);
-    res.render('my/posts', { posts: userPosts });
+    res.render('my/posts', { title: 'My posts', posts: userPosts });
   });
 
-  app.get('/my/posts/:id', requiredAuth, (req, res, next) => {
+  app.get(endPoints.myPost(), requiredAuth, (req, res, next) => {
     const post = state.posts.find(
       (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
     );
     if (post) {
-      res.render('my/edit-post', { post, form: post, errors: {} });
+      res.render('my/edit-post', { title: `Post: ${post.title}`, post, form: post, errors: {} });
     } else {
       next(new NotFoundError());
     }
   });
 
-  app.post('/my/posts', requiredAuth, (req, res) => {
+  app.post(endPoints.myPosts(), requiredAuth, (req, res) => {
     const { title, body } = req.body;
     const trimmedTitle = title.trim();
     const trimmedBody = body.trim();
@@ -139,10 +145,10 @@ export default (app) => {
     }
 
     res.status(400);
-    res.render('my/new-post', { form: req.body, errors });
+    res.render('my/new-post', { title: 'New post', form: req.body, errors });
   });
 
-  app.patch('/my/posts/:id', requiredAuth, (req, res, next) => {
+  app.patch(endPoints.myPost(), requiredAuth, (req, res, next) => {
     const post = state.posts.find(
       (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
     );
@@ -170,7 +176,7 @@ export default (app) => {
     }
   });
 
-  app.delete('/my/posts/:id', requiredAuth, (req, res) => {
+  app.delete(endPoints.myPost(), requiredAuth, (req, res) => {
     state.posts = state.posts.filter(
       (p) => !(p.id === Number(req.params.id) && res.locals.currentUser.nickname === p.user),
     );
@@ -178,8 +184,8 @@ export default (app) => {
     res.redirect('/my/posts');
   });
 
-  app.get('/my/new-post', requiredAuth, (req, res) => {
-    res.render('my/new-post', { form: {}, errors: {} });
+  app.get(endPoints.myNewPost(), requiredAuth, (req, res) => {
+    res.render('my/new-post', { title: 'New post', form: {}, errors: {} });
   });
 
   app.use((req, res, next) => {
