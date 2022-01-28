@@ -6,8 +6,14 @@
     "blog",
     "nodejs",
     "expressjs",
+    "express-session",
     "supertest",
-    "middleware"
+    "middleware",
+    "flash",
+    "body-parser",
+    "pug",
+    "bootstrap",
+    "cryptojs"
   ],
   "main": "src/index.js",
   "scripts": {
