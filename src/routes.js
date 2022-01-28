@@ -6,7 +6,7 @@ import Post from './models/Post.js';
 import state from './state.js';
 import encrypt from './encrypt.js';
 import { endPoints, validationErrors } from './constants/index.js';
-import requiredAuth from './required-auth.js';
+import requiredAuth from './requiredAuth.js';
 
 export default (app) => {
   app.use((req, res, next) => {
@@ -20,7 +20,6 @@ export default (app) => {
 
   app.get(endPoints.main(), (req, res) => {
     const { posts } = state;
-
     res.render('posts/posts', {
       posts,
       title: 'Express Blog',

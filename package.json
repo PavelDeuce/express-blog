@@ -1,20 +1,27 @@
 {
   "name": "express-blog",
-  "version": "1.0.0",
-  "description": "Sample blog",
+  "version": "1.2.0",
+  "description": "Sample blog on expressjs",
+  "keywords": [
+    "blog",
+    "nodejs",
+    "expressjs",
+    "supertest",
+    "middleware"
+  ],
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/bin/express-blog.js",
+    "test": "npx jest --colors",
+    "test-coverage": "npm test -- --coverage --coverageProvider=v8",
+    "lint": "npx eslint ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PavelDeuce/express-blog.git"
   },
-  "keywords": [
-    "blog"
-  ],
   "type": "module",
-  "author": "Pavel Deuce",
+  "author": "Pavel Deryugin (PavelDeuce)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/PavelDeuce/express-blog/issues"

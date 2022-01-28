@@ -13,7 +13,7 @@ const endPoints = {
 const validationErrors = {
   blank: () => "Can't be a blank",
   unique: () => 'Must be unique',
-  symbolsLength: (l) => `Length must be at least ${l} characters`,
+  symbolsLength: (length) => `Length must be at least ${length} characters`,
   authentication: () => 'Invalid nickname or password',
 };
 
