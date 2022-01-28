@@ -1,0 +1,2 @@
+start:
+	heroku local web
