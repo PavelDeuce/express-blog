@@ -2,10 +2,10 @@ install:
 	npm install
 
 start:
-	npm run start
+	DEBUG="blog" npm run start
 
 start-heroku:
-	heroku local web
+	DEBUG="blog" heroku local web DEBUG="blog"
 
 lint:
 	npm run lint

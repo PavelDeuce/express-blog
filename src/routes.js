@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import log from './logger.js';
 import NotFoundError from './errors/NotFoundError.js';
 import Guest from './models/Guest.js';
 import User from './models/User.js';
@@ -9,6 +10,11 @@ import { endPoints, validationErrors } from './constants/index.js';
 import requiredAuth from './requiredAuth.js';
 
 export default (app) => {
+  app.use((req, res, next) => {
+    log('body', req.body);
+    next();
+  });
+
   app.use((req, res, next) => {
     if (req.session && req.session.nickname) {
       const { nickname } = req.session;
@@ -188,6 +194,7 @@ export default (app) => {
   });
 
   app.use((error, req, res, next) => {
+    log(error.message);
     res.status(error.status);
     switch (error.status) {
       case 403:
