@@ -27,11 +27,6 @@ export default (app) => {
     });
   });
 
-  app.get(endPoints.posts(), (req, res) => {
-    const { posts } = state;
-    res.render('posts/posts', { title: 'All Posts', posts });
-  });
-
   app.get(endPoints.post(), (req, res, next) => {
     const post = state.posts.find((p) => p.id === Number(req.params.id));
     if (post) {
@@ -110,23 +105,12 @@ export default (app) => {
       res.redirect(endPoints.main());
     });
 
-  app.get(endPoints.myPosts(), requiredAuth, (req, res) => {
-    const { posts } = state;
-    const userPosts = posts.filter((p) => p.user === res.locals.currentUser.nickname);
-    res.render('my/posts', { title: 'My posts', posts: userPosts });
-  });
-
   app
-    .route(endPoints.myPost())
-    .get(requiredAuth, (req, res, next) => {
-      const post = state.posts.find(
-        (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
-      );
-      if (post) {
-        res.render('my/edit-post', { title: `Post: ${post.title}`, post, form: post, errors: {} });
-      } else {
-        next(new NotFoundError());
-      }
+    .route(endPoints.myPosts())
+    .get(requiredAuth, (req, res) => {
+      const { posts } = state;
+      const userPosts = posts.filter((p) => p.user === res.locals.currentUser.nickname);
+      res.render('my/posts', { title: 'My posts', posts: userPosts });
     })
     .post(requiredAuth, (req, res) => {
       const { title, body } = req.body;
@@ -145,9 +129,21 @@ export default (app) => {
         res.redirect(`/my/posts/${post.id}`);
         return;
       }
-
-      res.status(400);
+      res.status(422);
       res.render('my/new-post', { title: 'New post', form: req.body, errors });
+    });
+
+  app
+    .route(endPoints.myPost())
+    .get(requiredAuth, (req, res, next) => {
+      const post = state.posts.find(
+        (p) => p.user === res.locals.currentUser.nickname && p.id === Number(req.params.id),
+      );
+      if (post) {
+        res.render('my/edit-post', { title: `Post: ${post.title}`, post, form: post, errors: {} });
+      } else {
+        next(new NotFoundError());
+      }
     })
     .patch(requiredAuth, (req, res, next) => {
       const post = state.posts.find(
@@ -171,7 +167,7 @@ export default (app) => {
         }
 
         res.status(422);
-        res.render('my/posts/edit', { post, form: req.body, errors });
+        res.render('my/edit-post', { post, form: req.body, errors });
       } else {
         next(new NotFoundError());
       }
